@@ -9,7 +9,7 @@ const SSLOption = {
     key: fs.readFileSync('./key.pem'),  
     cert: fs.readFileSync('./server.crt')
 };  
-const onListen = (req, res) => {res.end('Hello there!')};
+function onListen(req, res) {res.end('Hello there!')};
 const server = http.createServer(SSLOption, onListen);
 
 const io = require('socket.io')(server, {path: '/'});
@@ -29,12 +29,12 @@ io.on('connection', function(socket){
 		socket.emit('someone voted', {agree, disagree});
 	}
 	console.log('People: ', socketNumber);
-	socket.on('draw', line => {
+	socket.on('draw', function(line) {
 		if (line.size < 2 || line.size > 24) return;
 		lineList.push(line);
 		socket.broadcast.emit('draw', line);
 	});
-	socket.on('clear', () => {
+	socket.on('clear', function() {
 		if (voting) return;
 		if (socketNumber < 2) io.emit('clear');
 		else {
@@ -44,7 +44,7 @@ io.on('connection', function(socket){
 			socket.broadcast.emit('vote clear');
 		};
 	});
-	socket.on('vote clear', isAgree => {
+	socket.on('vote clear', function(isAgree) {
 		if (voted) return;
 		voted = true;
 		if (isAgree) ++agree;
@@ -55,7 +55,7 @@ io.on('connection', function(socket){
 		}
 	});
 	socket.on('cleared', onCleared);
-	socket.on('disconnecting', () => {
+	socket.on('disconnecting', function() {
 		console.log('People: ', --socketNumber);
 		if (voting && endVote(socketNumber, agree, disagree)) {
 			onCleared();
@@ -83,7 +83,7 @@ function endVote(socketNumber, agree, disagree) {
 	} 
 	return false;
 }
-server.listen(port, (err) => {
+server.listen(port, function(err) {
   if (err) {
     return console.log('something bad happened', err);
   }
